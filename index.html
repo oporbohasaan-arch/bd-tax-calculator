@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bangladesh Income Tax Calculator — FY 2024–25</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#ffffff;--muted:#6b7280;
+  --accent:#0ea5a4;--accent2:#0f766e;
+}
+body{font-family:Inter,ui-sans-serif; background:linear-gradient(180deg,#eef2f7,#f4f7fb);
+margin:0;padding:24px;display:flex;justify-content:center;color:#0f172a;}
+.wrap{max-width:900px;width:100%;}
+h1{margin:0;font-size:22px;}
+.card{background:var(--card);border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(15,23,42,.08);}
+label{display:block;margin-top:14px;font-size:14px;color:var(--muted);}
+.input,.select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #e6eef4;font-size:15px;}
+.row{position:relative;margin-top:8px;}
+.tooltip{position:absolute;top:-34px;left:0;background:var(--accent);color:#fff;
+padding:6px 10px;border-radius:8px;font-size:12px;opacity:0;transition:.2s;white-space:nowrap;}
+.row:hover .tooltip{opacity:1;}
+button{cursor:pointer;}
+.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:white;
+padding:12px 18px;border:none;border-radius:10px;font-weight:600;margin-top:18px;}
+.kpi{margin-top:14px;padding:12px;border:1px solid #e6eef4;border-radius:10px;background:#fff;}
+.kpi span{display:block;font-size:20px;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Bangladesh Income Tax Calculator <small style="color:#64748b;">(FY 2024–25)</small></h1>
+<div class="card">
+<label>Income</label>
+<input id="income" class="input" type="number" value="500000">
+<select id="type" class="select" style="margin-top:8px;">
+  <option value="monthly">Monthly</option>
+  <option value="annual">Annual</option>
+</select>
+
+<label>Taxpayer type</label>
+<select id="taxType" class="select">
+  <option value="male">Male</option>
+  <option value="female">Female</option>
+  <option value="senior">Senior Citizen</option>
+</select>
+
+<label>Rebate deductions (BDT)</label>
+<div class="row">
+  <input id="rebateLife" class="input" type="number" placeholder="Life Insurance">
+  <div class="tooltip">Premiums paid for life insurance policies eligible under NBR rules.</div>
+</div>
+<div class="row">
+  <input id="rebateProvident" class="input" type="number" placeholder="Provident Fund / Retirement">
+  <div class="tooltip">Contributions to recognized retirement schemes like PF, pension funds, or NPS.</div>
+</div>
+<div class="row">
+  <input id="rebateOther" class="input" type="number" placeholder="Other Rebates">
+  <div class="tooltip">Other eligible deductions such as charitable donations or approved savings.</div>
+</div>
+
+<button class="primary" onclick="calculate()">Calculate</button>
+
+<div class="kpi">Annual Income <span id="annual">—</span></div>
+<div class="kpi">Total Annual Tax <span id="annualTax">—</span></div>
+<div class="kpi">Monthly Tax <span id="monthlyTax">—</span></div>
+<div class="kpi">Take-home (Monthly) <span id="takeHome">—</span></div>
+</div>
+</div>
+
+<script>
+const slabs = {
+  male: [
+    { l: 350000, r: 0 },
+    { l: 100000, r: 0.05 },
+    { l: 400000, r: 0.10 },
+    { l: 500000, r: 0.15 },
+    { l: 5000000, r: 0.20 },
+    { l: Infinity, r: 0.25 }
+  ],
+  female: [
+    { l: 400000, r: 0 },
+    { l: 100000, r: 0.05 },
+    { l: 400000, r: 0.10 },
+    { l: 500000, r: 0.15 },
+    { l: 5000000, r: 0.20 },
+    { l: Infinity, r: 0.25 }
+  ],
+  senior: [
+    { l: 450000, r: 0 },
+    { l: 100000, r: 0.05 },
+    { l: 400000, r: 0.10 },
+    { l: 500000, r: 0.15 },
+    { l: 5000000, r: 0.20 },
+    { l: Infinity, r: 0.25 }
+  ]
+};
+
+function calcTax(income, type) {
+  let s = slabs[type], tax = 0, rem = income;
+  for (let i of s) {
+    let t = Math.min(rem, i.l);
+    tax += t * i.r;
+    rem -= t;
+    if (rem <= 0) break;
+  }
+  return Math.round(tax);
+}
+
+function format(n) {
+  return n.toLocaleString('en-US');
+}
+
+function calculate() {
+  const incomeVal = +document.getElementById('income').value;
+  const mode = document.getElementById('type').value;
+  const ttype = document.getElementById('taxType').value;
+
+  const rebateLife = +document.getElementById('rebateLife').value || 0;
+  const rebateProvident = +document.getElementById('rebateProvident').value || 0;
+  const rebateOther = +document.getElementById('rebateOther').value || 0;
+  const totalRebate = rebateLife + rebateProvident + rebateOther;
+
+  const annualIncome = mode === 'monthly' ? incomeVal * 12 : incomeVal;
+  const taxable = Math.max(annualIncome - totalRebate, 0);
+  const tax = calcTax(taxable, ttype);
+
+  document.getElementById('annual').textContent = format(annualIncome);
+  document.getElementById('annualTax').textContent = format(tax);
+  document.getElementById('monthlyTax').textContent = format(Math.round(tax / 12));
+  document.getElementById('takeHome').textContent = format(Math.round((annualIncome / 12) - (tax / 12)));
+}
+</script>
+</body>
+</html>
