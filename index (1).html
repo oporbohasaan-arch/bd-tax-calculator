@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bangladesh Income Tax Calculator — Full Featured</title>
+  <meta name="description" content="A simple and full-featured Bangladesh Income Tax Calculator for FY 2024–25. Calculate your income tax, take-home salary, and rebates easily.">
+  <meta name="author" content="Jahid Hasan">
+  <link rel="icon" href="favicon.ico">
+  <style>
+    :root {
+      --bg:#f4f7fb; --card:#ffffff; --muted:#6b7280;
+      --accent:#0ea5a4; --accent-2:#0f766e;
+      --glass: rgba(255,255,255,0.7);
+    }
+    html,body {
+      height:100%; margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+      background: linear-gradient(180deg,#eef2f7 0%,var(--bg) 100%);
+      color:#0f172a; display:flex; align-items:center; justify-content:center; padding:24px;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+    .wrap{width:100%;max-width:960px;}
+    .header{display:flex;gap:16px;align-items:center;margin-bottom:18px;}
+    .logo{width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px;box-shadow:0 6px 18px rgba(15,118,110,0.16);}
+    .title h1{margin:0;font-size:20px;}
+    .title p{margin:0;color:var(--muted);font-size:13px;}
+    .card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 10px 30px rgba(15,23,42,0.06);}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:20px;}
+    @media(max-width:880px){.grid{grid-template-columns:1fr}.right{order:2}.left{order:1}}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;}
+    .input,.select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #e6eef4;font-size:15px;outline:none;box-sizing:border-box;}
+    .row{display:flex;gap:12px;align-items:center;}
+    .small-btn{padding:6px 10px;border-radius:8px;border:1px solid #e6eef4;background:#fbfdfe;font-size:13px;cursor:pointer;}
+    .primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;padding:12px 16px;border-radius:10px;border:none;font-weight:600;cursor:pointer;box-shadow:0 8px 20px rgba(14,165,164,0.12);}
+    .muted{color:var(--muted);font-size:13px;}
+    .result{background:linear-gradient(180deg, rgba(14,165,164,0.05), rgba(15,118,110,0.02));border-radius:12px;padding:14px;border:1px solid rgba(14,165,164,0.06);}
+    .big{font-size:20px;font-weight:700;}
+    .tiny{font-size:12px;color:var(--muted);}
+    .kpi{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:10px;background:var(--card);border:1px solid #f1f5f9;}
+    .kpi small{color:var(--muted)}
+    .footer{margin-top:14px;color:var(--muted);font-size:12px;}
+    .quick{display:flex;gap:8px;flex-wrap:wrap;}
+    .error{color:#b91c1c;font-size:13px;margin-top:8px;}
+    .badge{display:inline-block;background:#e6fffa;color:#024; padding:6px 8px;border-radius:999px;font-weight:600;font-size:13px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="logo">BD</div>
+      <div class="title">
+        <h1>Bangladesh Income Tax Calculator</h1>
+        <p>Full-featured • FY 2024–25</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="grid">
+        <div class="left">
+          <label>Enter income</label>
+          <div style="display:flex;gap:8px;">
+            <input id="income" class="input" type="number" min="0" value="500000"/>
+            <select id="type" class="select" style="width:140px">
+              <option value="monthly">Monthly</option>
+              <option value="annual">Annual</option>
+            </select>
+          </div>
+          <div style="margin-top:12px;">
+            <label>Taxpayer type</label>
+            <select id="taxType" class="select">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="senior">Senior Citizen</option>
+            </select>
+          </div>
+          <div style="margin-top:12px;">
+            <label>Investment & Rebate Deductions (BDT)</label>
+            <div class="row"><input id="rebateLife" class="input" type="number" min="0" placeholder="Life Insurance" value="0"/></div>
+            <div class="row" style="margin-top:6px;"><input id="rebateProvident" class="input" type="number" min="0" placeholder="Provident Fund/Retirement" value="0"/></div>
+            <div class="row" style="margin-top:6px;"><input id="rebateOther" class="input" type="number" min="0" placeholder="Other Rebates" value="0"/></div>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button class="small-btn" onclick="quick(100000)">100k</button>
+            <button class="small-btn" onclick="quick(200000)">200k</button>
+            <button class="small-btn" onclick="quick(300000)">300k</button>
+            <button class="small-btn" onclick="quick(400000)">400k</button>
+            <button class="small-btn" onclick="quick(500000)">500k</button>
+            <div style="flex:1"></div>
+            <button class="primary" onclick="calculate()">Calculate</button>
+          </div>
+          <div id="error" class="error" style="display:none"></div>
+          <div style="margin-top:18px;">
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div class="kpi" style="flex:1">
+                <small>Annual Income</small><div id="annual" class="big">—</div><small class="tiny">in BDT</small>
+              </div>
+              <div class="kpi" style="flex:1">
+                <small>Total Annual Tax</small><div id="annualTax" class="big">—</div><small class="tiny">tax for the year</small>
+              </div>
+              <div class="kpi" style="flex:1">
+                <small>Monthly Tax</small><div id="monthlyTax" class="big">—</div><small class="tiny">per month</small>
+              </div>
+              <div class="kpi" style="flex:1">
+                <small>Take-home (Monthly)</small><div id="takeHome" class="big">—</div><small class="tiny">after tax</small>
+                <div style="margin-top:6px" class="tiny">Effective tax rate: <span id="effRate">—</span></div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="primary" onclick="exportCSV()">Export to CSV</button>
+          </div>
+          <div class="footer">
+            <div style="margin-top:10px;">Notes: Includes FY 2024–25 slabs for male/female/senior taxpayers. Rebates reduce taxable income. Consult a tax professional for filing.</div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="result">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+              <div style="flex:1">
+                <div style="font-weight:700">How tax is calculated</div>
+                <div class="tiny" style="margin-top:6px">Tax is applied progressively across slabs. Rebates are subtracted first. The first portion is tax-free; next portions taxed at increasing rates.</div>
+              </div>
+              <div class="badge">FY 2024–25</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const slabsAll={ male:[{limit:350000,rate:0},{limit:100000,rate:0.05},{limit:400000,rate:0.10},{limit:500000,rate:0.15},{limit:5000000,rate:0.20},{limit:Infinity,rate:0.25}], female:[{limit:400000,rate:0},{limit:100000,rate:0.05},{limit:400000,rate:0.10},{limit:500000,rate:0.15},{limit:5000000,rate:0.20},{limit:Infinity,rate:0.25}], senior:[{limit:450000,rate:0},{limit:100000,rate:0.05},{limit:400000,rate:0.10},{limit:500000,rate:0.15},{limit:5000000,rate:0.20},{limit:Infinity,rate:0.25}] };
+
+    function calcAnnualTax(annualIncome,taxType){ let slabs=slabsAll[taxType]; let remaining=annualIncome; let tax=0; for(let i=0;i<slabs.length;i++){ let lim=slabs[i].limit; let rate=slabs[i].rate; let taxable=Math.min(remaining,lim); tax+=taxable*rate; remaining-=taxable; if(remaining<=0) break;} return Math.round(tax);}
+    function numberWithCommas(x){if(x===null||x===undefined)return '—';return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");}
+    function showError(msg){const el=document.getElementById('error');if(!msg){el.style.display='none';el.textContent='';return;}el.style.display='block';el.textContent=msg;}
+    function calculate(){showError('');const inc=Number(document.getElementById('income').value);const type=document.getElementById('type').value;const taxType=document.getElementById('taxType').value;const rebateLife=Number(document.getElementById('rebateLife').value)||0;const rebateProvident=Number(document.getElementById('rebateProvident').value)||0;const rebateOther=Number(document.getElementById('rebateOther').value)||0;if(!isFinite(inc)||inc<0){showError('Please enter valid positive income');return;}let annualIncome=type==='monthly'?inc*12:inc;let totalRebate=rebateLife+rebateProvident+rebateOther;let taxableIncome=Math.max(annualIncome-totalRebate,0);let totalTax=calcAnnualTax(taxableIncome,taxType);let monthlyTax=Math.round(totalTax/12);let takeHomeMonthly=Math.round((annualIncome/12)-monthlyTax);let effRate=annualIncome?((totalTax/annualIncome)*100):0;document.getElementById('annual').textContent='BDT '+numberWithCommas(Math.round(annualIncome));document.getElementById('annualTax').textContent='BDT '+numberWithCommas(totalTax);document.getElementById('monthlyTax').textContent='BDT '+numberWithCommas(monthlyTax);document.getElementById('takeHome').textContent='BDT '+numberWithCommas(takeHomeMonthly);document.getElementById('effRate').textContent=effRate.toFixed(2)+'%';}
+    function quick(amount){document.getElementById('income').value=amount;document.getElementById('type').value='monthly';calculate();}
+    function exportCSV(){const inc=document.getElementById('income').value;const type=document.getElementById('type').value;const taxType=document.getElementById('taxType').value;const rebateLife=document.getElementById('rebateLife').value;const rebateProvident=document.getElementById('rebateProvident').value;const rebateOther=document.getElementById('rebateOther').value;const data=[['Income Type','Taxpayer Type','Annual Income','Life Insurance','Provident Fund','Other Rebates','Total Tax','Monthly Tax','Take-home Monthly','Effective Rate']];const annualIncome=type==='monthly'?inc*12:inc;const totalRebate=Number(rebateLife)+Number(rebateProvident)+Number(rebateOther);const taxableIncome=Math.max(annualIncome-totalRebate,0);const totalTax=calcAnnualTax(taxableIncome,taxType);const monthlyTax=Math.round(totalTax/12);const takeHome=Math.round((annualIncome/12)-monthlyTax);const effRate=annualIncome?((totalTax/annualIncome)*100):0;data.push([type,taxType,annualIncome,rebateLife,rebateProvident,rebateOther,totalTax,monthlyTax,takeHome,effRate.toFixed(2)+'%']);let csvContent="data:text/csv;charset=utf-8," + data.map(e=>e.join(",")).join("
+");const encodedUri=encodeURI(csvContent);const link=document.createElement("a");link.setAttribute("href",encodedUri);link.setAttribute("download","bd_tax_calculation.csv");document.body.appendChild(link);link.click();document.body.removeChild(link);}
+    calculate();
+  </script>
+</body>
+</html>
